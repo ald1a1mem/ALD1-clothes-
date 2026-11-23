@@ -379,9 +379,9 @@
       const hasImage = item.imageUrl && item.imageUrl.trim() !== '';
       if (hasImage) {
         const imgClass =
-          mode === 'card'
-            ? 'max-h-40 w-full object-contain transition duration-300 group-hover:scale-105'
-            : 'max-h-72 w-full object-contain';
+  mode === 'card'
+    ? 'h-full w-full object-cover transition duration-300 group-hover:scale-105'
+    : 'h-full w-full object-cover';
         return `
           <img
             src="${escapeHtml(item.imageUrl.trim())}"
@@ -574,9 +574,10 @@
                   </span>
                 </div>
 
-                <div class="mb-4 flex h-44 items-center justify-center border border-hairline/70 bg-obsidian p-3">
-                  ${renderItemVisual(item, 'card')}
-                </div>
+                <div class="mb-4 flex h-44 w-full items-center justify-center overflow-hidden border border-hairline/70 bg-obsidian">
+  ${renderItemVisual(item, 'card')}
+</div>
+
 
                 <div class="space-y-1">
                   <div class="flex items-center justify-between gap-2">
