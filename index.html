@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ALD1 衣櫃</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#0B0B0D',
+            charcoal: '#141418',
+            surface: '#1C1C22',
+            acid: '#CCFF00',
+            muted: '#8E8E9A',
+            hairline: '#2A2A32',
+          },
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+            mono: ['"Space Mono"', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0b0b0d;
+      color: #f4f4f6;
+      font-family: 'Noto Sans TC', sans-serif;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+      min-height: 100vh;
+    }
+
+    .mono-num {
+      font-family: 'Space Mono', 'Noto Sans TC', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .item-card {
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .item-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(204, 255, 0, 0.55);
+      box-shadow: 0 14px 32px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(204, 255, 0, 0.18);
+    }
+
+    .item-card:hover .card-action-arrow {
+      transform: translateX(3px);
+      color: #ccff00;
+    }
+
+    .card-action-arrow {
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .member-btn-dim {
+      opacity: 0.32;
+      border-style: dashed;
+      border-color: rgba(142, 142, 154, 0.35);
+      color: #8e8e9a;
+    }
+
+    .member-btn-dim:hover {
+      opacity: 0.58;
+      border-color: rgba(142, 142, 154, 0.6);
+      color: #c8c8d2;
+    }
+
+    .member-btn-dim.is-active {
+      opacity: 0.72;
+      background-color: #ccff00;
+      border-color: #ccff00;
+      border-style: solid;
+      color: #0b0b0d;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-panel {
+      animation: modalFadeIn 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-acid selection:text-obsidian">
+
+  <!-- 頂部導覽列 -->
+  <header class="sticky top-0 z-30 border-b border-hairline bg-obsidian/90 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-3">
+        <span class="inline-block h-3 w-3 bg-acid"></span>
+        <h1 class="text-2xl font-black tracking-wider text-white sm:text-3xl">ALD1 衣櫃</h1>
+      </div>
+
+      <div class="flex flex-1 items-center justify-end gap-3 sm:max-w-md">
+        <div class="relative w-full">
+          <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+          </svg>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="搜尋品牌、品名、出處或成員..."
+            class="w-full border border-hairline bg-charcoal py-2 pl-10 pr-8 text-sm text-white placeholder-muted outline-none transition focus:border-acid"
+          />
+          <button
+            id="clearSearchBtn"
+            type="button"
+            title="清除搜尋"
+            class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+
+    <!-- 篩選與價格排序控制區 -->
+    <section class="mb-8 border border-hairline bg-charcoal p-4 sm:p-6">
+      <div class="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
+        <!-- 左側：成員篩選 + 單品類別篩選 -->
+        <div class="flex-1 space-y-5">
+          <!-- 成員分類 -->
+          <div>
+            <div class="mb-2.5 flex items-center justify-between">
+              <span class="text-xs font-bold tracking-widest text-muted">成員分類</span>
+              <span id="activeMemberLabel" class="text-xs font-bold text-acid">全部成員</span>
+            </div>
+            <div id="memberFilters" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- 單品類別 -->
+          <div>
+            <div class="mb-2.5 flex items-center justify-between">
+              <span class="text-xs font-bold tracking-widest text-muted">單品類別</span>
+              <button
+                id="resetFiltersBtn"
+                type="button"
+                class="border border-hairline bg-surface px-3 py-1 text-xs font-bold text-muted transition hover:border-acid hover:text-acid"
+              >
+                重置篩選
+              </button>
+            </div>
+            <div id="categoryFilters" class="flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+
+        <!-- 右側：價格排序小區塊 -->
+        <div class="w-full shrink-0 border-t border-hairline pt-4 lg:w-64 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+          <div class="mb-2.5 flex items-center justify-between">
+            <span class="text-xs font-bold tracking-widest text-muted">價格排序</span>
+            <span id="sortStatusBadge" class="bg-acid/15 px-2 py-0.5 text-[11px] font-bold text-acid">預設順序</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              id="sortDescBtn"
+              type="button"
+              data-sort="desc"
+              class="sort-btn flex items-center justify-center gap-1.5 border border-hairline bg-surface px-3 py-2.5 text-xs font-bold text-white transition hover:border-acid hover:text-acid"
+            >
+              <span>由貴至便宜</span>
+              <span>↓</span>
+            </button>
+            <button
+              id="sortAscBtn"
+              type="button"
+              data-sort="asc"
+              class="sort-btn flex items-center justify-center gap-1.5 border border-hairline bg-surface px-3 py-2.5 text-xs font-bold text-white transition hover:border-acid hover:text-acid"
+            >
+              <span>由便宜至貴</span>
+              <span>↑</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 結果統計列 -->
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-hairline pb-3">
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-muted">目前顯示</span>
+        <span id="resultCount" class="mono-num text-base font-bold text-acid">0</span>
+        <span class="text-muted">件單品</span>
+      </div>
+      <div class="text-xs text-muted">點擊單品卡片可查看完整出處與詳情</div>
+    </div>
+
+    <!-- 單品圖鑑網格 -->
+    <section id="itemsGrid" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></section>
+
+    <!-- 無符合條件時的空狀態 -->
+    <div id="emptyState" class="hidden border border-dashed border-hairline bg-charcoal/60 px-6 py-16 text-center">
+      <p class="mb-2 text-lg font-bold text-white">找不到符合條件的單品</p>
+      <p class="mb-5 text-sm text-muted">試試切換其他成員、單品類別，或清除搜尋關鍵字。</p>
+      <button
+        id="emptyResetBtn"
+        type="button"
+        class="bg-acid px-5 py-2.5 text-xs font-black tracking-wider text-obsidian transition hover:bg-white"
+      >
+        顯示全部單品
+      </button>
+    </div>
+  </main>
+
+  <!-- 單品詳情彈窗 -->
+  <div
+    id="detailModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+    <div id="modalPanel" class="modal-panel relative max-h-[90vh] w-full max-w-2xl overflow-y-auto border border-hairline bg-charcoal shadow-2xl">
+      <div class="sticky top-0 z-10 flex items-center justify-between border-b border-hairline bg-charcoal/95 px-5 py-4 backdrop-blur">
+        <div class="flex items-center gap-2.5">
+          <span id="modalMemberBadge" class="bg-acid px-2.5 py-0.5 text-xs font-black text-obsidian"></span>
+          <span id="modalCategoryBadge" class="border border-hairline bg-surface px-2.5 py-0.5 text-xs font-bold text-white"></span>
+          <span id="modalId" class="mono-num text-xs text-muted"></span>
+        </div>
+        <button
+          id="closeModalBtn"
+          type="button"
+          aria-label="關閉視窗"
+          class="flex h-8 w-8 items-center justify-center border border-hairline bg-surface text-sm text-white transition hover:border-acid hover:text-acid"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2">
+        <div class="flex min-h-[300px] items-center justify-center border-b border-hairline bg-obsidian p-6 md:border-b-0 md:border-r">
+          <div id="modalVisual" class="flex h-full w-full items-center justify-center"></div>
+        </div>
+
+        <div class="flex flex-col justify-between p-5 sm:p-6">
+          <div class="space-y-4">
+            <div>
+              <div id="modalBrand" class="text-sm font-bold tracking-wide text-acid"></div>
+              <h2 id="modalTitle" class="mt-1 text-xl font-black leading-snug text-white"></h2>
+            </div>
+
+            <div class="border-y border-hairline py-3.5">
+              <div class="text-xs text-muted">參考價格</div>
+              <div id="modalPrice" class="mono-num mt-1 text-2xl font-bold text-white"></div>
+            </div>
+
+            <div>
+              <div class="mb-1 text-xs font-bold text-muted">出處</div>
+              <p id="modalSource" class="text-sm leading-relaxed text-gray-200"></p>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-2">
+            <a
+              id="modalStoreLink"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex w-full items-center justify-center gap-2 bg-acid px-4 py-3 text-sm font-black text-obsidian transition hover:bg-white"
+            >
+              <span>前往賣場 / 官網</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * =========================================================================
+     * 【單品資料填寫區：itemsData】
+     * 之後新增或修改單品，只要複製一組 { ... } 貼進陣列裡即可。
+     *
+     * 欄位說明：
+     * - id:          單品編號字串（例如 "ALD1-001"）
+     * - member:      成員名稱，請對應：
+     *                "俊抒"、"ARNO"、"LEO"、"虔佑"、"相沅"、"鑫隆"、"安信"、"相炫"
+     * - category:    單品類別，請對應：
+     *                "上衣"、"外套"、"褲裝"、"鞋履"、"包袋"、"飾品"、"帽子/眼鏡"
+     * - brand:       品牌名稱（直接寫品牌名稱即可，不用加「品牌」字樣）
+     * - name:        單品名稱 / 型號
+     * - price:       參考價格數字（純數字，單位為 NT$，例如 18500；若不確定可填 0）
+     * - source:      出處（可寫日期 + 場合/活動/舞台/機場/SNS 等說明）
+     * - imageUrl:    單品圖片網址（填寫 .jpg / .png / .webp 圖片連結；若暫無圖片可留空 ""，會自動顯示預設圖示）
+     * - productUrl:  賣場或官網商品頁網址（填寫完整 https://... 連結；若暫無可留空 ""）
+     * =========================================================================
+     */
+    const itemsData = [
+      {
+        id: 'ALD1-001',
+        member: '相沅',
+        category: '衣服',
+        brand: 'FRITUR',
+        name: 'Snap Layered T-Shirt',
+        price: 3375,
+        source: '260312 出國',
+        imageUrl: 'https://ecimg.cafe24img.com/pg307b70585461034/fritur/web/product/tiny/20250827/7fe7cf00bc60131a117cea8acc6fd716.jpg',
+        productUrl: 'https://m.fritur.co.kr/article/review/4/2400/',
+      },
+      
+    ];
+
+    // 8 位成員名單
+    const MEMBERS = ['全部', '俊抒', 'ARNO', 'LEO', '虔佑', '相沅', '鑫隆', '安信', '相炫'];
+
+    // 單品類別清單
+    const CATEGORIES = ['全部', '上衣', '外套', '褲裝', '鞋履', '包袋', '飾品', '帽子/眼鏡'];
+
+    // 篩選與排序狀態
+    const state = {
+      member: '全部',
+      category: '全部',
+      search: '',
+      sort: 'default', // 'default' | 'desc' | 'asc'
+    };
+
+    function formatPrice(price) {
+      const num = Number(price) || 0;
+      return `NT$ ${num.toLocaleString('zh-Hant-TW')}`;
+    }
+
+    function getCategoryFallbackSvg(category, sizeClass = 'h-24 w-24') {
+      const paths = {
+        上衣: `<path d="M8 5l4 2 4-2 4 3-2 4-2-1v9H10v-9l-2 1-2-4 2-3z" />`,
+        外套: `<path d="M9 4h6l4 3 2 13h-5l-1-8h-2l-1 8H3L5 7l4-3z" /><path d="M12 4v8" />`,
+        褲裝: `<path d="M7 4h10l1 16h-4l-1-9-1 9H6L7 4z" />`,
+        鞋履: `<path d="M4 15l5-2 4-5 3 2 5 3v4H4v-2z" />`,
+        包袋: `<path d="M6 9h12l1 11H5L6 9z" /><path d="M9 9V7a3 3 0 016 0v2" />`,
+        飾品: `<circle cx="12" cy="14" r="5" /><path d="M12 4v5M9.5 6.5L12 9l2.5-2.5" />`,
+        '帽子/眼鏡': `<circle cx="7.5" cy="13" r="3.5" /><circle cx="16.5" cy="13" r="3.5" /><path d="M11 13h2M4 12.5L2.5 11M20 12.5l1.5-1.5" />`,
+      };
+      const inner = paths[category] || `<rect x="5" y="5" width="14" height="14" rx="2" />`;
+      return `
+        <svg class="${sizeClass} text-acid/85" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          ${inner}
+        </svg>
+      `;
+    }
+
+    function renderItemVisual(item, mode = 'card') {
+      const hasImage = item.imageUrl && item.imageUrl.trim() !== '';
+      if (hasImage) {
+        const imgClass =
+          mode === 'card'
+            ? 'max-h-40 w-full object-contain transition duration-300 group-hover:scale-105'
+            : 'max-h-72 w-full object-contain';
+        return `
+          <img
+            src="${escapeHtml(item.imageUrl.trim())}"
+            alt="${escapeHtml(item.name)}"
+            class="${imgClass}"
+            onerror="this.outerHTML = window.__fallbackVisual('${escapeHtml(item.category)}', '${mode}')"
+          />
+        `;
+      }
+      return window.__fallbackVisual(item.category, mode);
+    }
+
+    window.__fallbackVisual = function (category, mode) {
+      const sizeClass = mode === 'card' ? 'h-24 w-24 sm:h-28 sm:w-28' : 'h-36 w-36';
+      return `
+        <div class="flex flex-col items-center justify-center gap-2.5">
+          ${getCategoryFallbackSvg(category, sizeClass)}
+          <span class="text-[11px] tracking-wider text-muted">${escapeHtml(category)}</span>
+        </div>
+      `;
+    };
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderMemberFilters() {
+      const container = document.getElementById('memberFilters');
+      container.innerHTML = MEMBERS.map((member) => {
+        const isActive = state.member === member;
+        const isQianyou = member === '虔佑';
+
+        let classes = 'px-3.5 py-1.5 text-xs font-bold transition cursor-pointer border ';
+        if (isQianyou) {
+          classes += `member-btn-dim ${isActive ? 'is-active' : ''}`;
+        } else if (isActive) {
+          classes += 'border-acid bg-acid text-obsidian font-black';
+        } else {
+          classes += 'border-hairline bg-surface text-gray-200 hover:border-acid hover:text-acid';
+        }
+
+        return `
+          <button
+            type="button"
+            data-member="${escapeHtml(member)}"
+            class="${classes}"
+          >
+            ${escapeHtml(member)}
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('button[data-member]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.member = btn.dataset.member;
+          renderAll();
+        });
+      });
+
+      document.getElementById('activeMemberLabel').textContent =
+        state.member === '全部' ? '全部成員' : state.member;
+    }
+
+    function renderCategoryFilters() {
+      const container = document.getElementById('categoryFilters');
+      container.innerHTML = CATEGORIES.map((cat) => {
+        const isActive = state.category === cat;
+        const classes = isActive
+          ? 'border-acid bg-acid text-obsidian font-black px-3.5 py-1.5 text-xs transition cursor-pointer border'
+          : 'border-hairline bg-surface text-gray-200 hover:border-acid hover:text-acid font-bold px-3.5 py-1.5 text-xs transition cursor-pointer border';
+        return `
+          <button
+            type="button"
+            data-category="${escapeHtml(cat)}"
+            class="${classes}"
+          >
+            ${escapeHtml(cat)}
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('button[data-category]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.category = btn.dataset.category;
+          renderAll();
+        });
+      });
+    }
+
+    function updateSortButtons() {
+      const descBtn = document.getElementById('sortDescBtn');
+      const ascBtn = document.getElementById('sortAscBtn');
+      const badge = document.getElementById('sortStatusBadge');
+
+      [descBtn, ascBtn].forEach((btn) => {
+        const isSelected = btn.dataset.sort === state.sort;
+        btn.className = isSelected
+          ? 'sort-btn flex items-center justify-center gap-1.5 border border-acid bg-acid px-3 py-2.5 text-xs font-black text-obsidian transition cursor-pointer'
+          : 'sort-btn flex items-center justify-center gap-1.5 border border-hairline bg-surface px-3 py-2.5 text-xs font-bold text-white transition hover:border-acid hover:text-acid cursor-pointer';
+      });
+
+      if (state.sort === 'desc') {
+        badge.textContent = '由貴至便宜';
+      } else if (sta
