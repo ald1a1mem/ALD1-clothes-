@@ -149,7 +149,7 @@
       </div>
     </div>
   </header>
-
+  
   <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 
     <!-- 篩選與價格排序控制區 -->
@@ -303,7 +303,6 @@
       </div>
     </div>
   </div>
-
   <script>
     /**
      * =========================================================================
@@ -327,16 +326,92 @@
     const itemsData = [
       {
         id: 'ALD1-001',
-        member: '相沅',
-        category: '衣服',
-        brand: 'FRITUR',
-        name: 'Snap Layered T-Shirt',
-        price: 3375,
-        source: '260312 出國',
-        imageUrl: 'https://ecimg.cafe24img.com/pg307b70585461034/fritur/web/product/tiny/20250827/7fe7cf00bc60131a117cea8acc6fd716.jpg',
-        productUrl: 'https://m.fritur.co.kr/article/review/4/2400/',
+        member: '俊抒',
+        category: '外套',
+        brand: 'Balenciaga',
+        name: '水洗破壞做舊連帽拉鍊外套',
+        price: 46800,
+        source: '2026.08.14 音樂中心打歌後台上班路',
+        imageUrl: '',
+        productUrl: 'https://www.balenciaga.com',
       },
-      
+      {
+        id: 'ALD1-002',
+        member: 'ARNO',
+        category: '飾品',
+        brand: 'Vivienne Westwood',
+        name: '土星造型銀色雙層項鍊',
+        price: 9200,
+        source: '2026.08.10 官方社群私服照',
+        imageUrl: '',
+        productUrl: 'https://www.viviennewestwood.com',
+      },
+      {
+        id: 'ALD1-003',
+        member: 'LEO',
+        category: '帽子/眼鏡',
+        brand: 'Gentle Monster',
+        name: '銀框無框鏡面太陽眼鏡',
+        price: 10900,
+        source: '2026.07.29 仁川機場出境',
+        imageUrl: '',
+        productUrl: 'https://www.gentlemonster.com',
+      },
+      {
+        id: 'ALD1-004',
+        member: '虔佑',
+        category: '上衣',
+        brand: 'Acne Studios',
+        name: '做舊字母印花短袖 T-Shirt',
+        price: 11400,
+        source: '2026.05.18 練習室日常紀錄影片',
+        imageUrl: '',
+        productUrl: 'https://www.acnestudios.com',
+      },
+      {
+        id: 'ALD1-005',
+        member: '相沅',
+        category: '鞋履',
+        brand: 'Maison Margiela',
+        name: 'Replica 德訓鞋黑白拼接款',
+        price: 21500,
+        source: '2026.08.02 簽售會造型',
+        imageUrl: '',
+        productUrl: 'https://www.maisonmargiela.com',
+      },
+      {
+        id: 'ALD1-006',
+        member: '鑫隆',
+        category: '褲裝',
+        brand: 'Carhartt WIP',
+        name: '雙膝工裝寬版長褲（炭黑）',
+        price: 5400,
+        source: '2026.08.11 舞蹈練習幕後花絮',
+        imageUrl: '',
+        productUrl: 'https://www.carhartt-wip.com',
+      },
+      {
+        id: 'ALD1-007',
+        member: '安信',
+        category: '包袋',
+        brand: 'Diesel',
+        name: '1DR 金屬 D 字標誌單肩包',
+        price: 16800,
+        source: '2026.08.06 雜誌畫報拍攝現場',
+        imageUrl: '',
+        productUrl: 'https://www.diesel.com',
+      },
+      {
+        id: 'ALD1-008',
+        member: '相炫',
+        category: '飾品',
+        brand: 'Chrome Hearts',
+        name: '十字架造型 925 純銀戒指',
+        price: 28900,
+        source: '2026.08.16 音樂節目主打歌舞台',
+        imageUrl: '',
+        productUrl: '',
+      },
     ];
 
     // 8 位成員名單
@@ -405,7 +480,7 @@
       `;
     };
 
-    function escapeHtml(str) {
+        function escapeHtml(str) {
       return String(str ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -491,4 +566,239 @@
 
       if (state.sort === 'desc') {
         badge.textContent = '由貴至便宜';
-      } else if (sta
+      } else if (state.sort === 'asc') {
+        badge.textContent = '由便宜至貴';
+      } else {
+        badge.textContent = '預設順序';
+      }
+    }
+
+    function getFilteredAndSortedItems() {
+      const q = state.search.trim().toLowerCase();
+
+      const filtered = itemsData.filter((item) => {
+        const matchMember = state.member === '全部' || item.member === state.member;
+        const matchCategory = state.category === '全部' || item.category === state.category;
+        const matchSearch =
+          !q ||
+          String(item.brand).toLowerCase().includes(q) ||
+          String(item.name).toLowerCase().includes(q) ||
+          String(item.member).toLowerCase().includes(q) ||
+          String(item.source).toLowerCase().includes(q);
+
+        return matchMember && matchCategory && matchSearch;
+      });
+
+      if (state.sort === 'desc') {
+        return [...filtered].sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+      }
+      if (state.sort === 'asc') {
+        return [...filtered].sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+      }
+      return filtered;
+    }
+
+    function renderItemsGrid() {
+      const grid = document.getElementById('itemsGrid');
+      const emptyState = document.getElementById('emptyState');
+      const resultCount = document.getElementById('resultCount');
+
+      const list = getFilteredAndSortedItems();
+      resultCount.textContent = String(list.length);
+
+      if (list.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      grid.innerHTML = list
+        .map((item) => {
+          const hasStore = item.productUrl && item.productUrl.trim() !== '';
+          const storeBtnHtml = hasStore
+            ? `<a
+                 href="${escapeHtml(item.productUrl.trim())}"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 onclick="event.stopPropagation()"
+                 class="mt-3 flex w-full items-center justify-center gap-1.5 border border-hairline bg-surface px-3 py-2 text-xs font-bold text-white transition hover:border-acid hover:bg-acid hover:text-obsidian"
+               >
+                 <span>前往賣場 / 官網</span>
+                 <span>↗</span>
+               </a>`
+            : `<span
+                 onclick="event.stopPropagation()"
+                 class="mt-3 flex w-full cursor-not-allowed items-center justify-center border border-hairline/50 bg-obsidian/60 px-3 py-2 text-xs text-muted/60"
+               >
+                 暫無賣場連結
+               </span>`;
+
+          return `
+            <article
+              data-id="${escapeHtml(item.id)}"
+              class="item-card group flex cursor-pointer flex-col justify-between border border-hairline bg-charcoal p-4"
+            >
+              <div>
+                <div class="mb-3 flex items-center justify-between gap-2">
+                  <span class="bg-acid px-2.5 py-0.5 text-xs font-black text-obsidian">
+                    ${escapeHtml(item.member)}
+                  </span>
+                  <span class="border border-hairline bg-surface px-2 py-0.5 text-xs text-gray-300">
+                    ${escapeHtml(item.category)}
+                  </span>
+                </div>
+
+                <div class="mb-4 flex h-44 items-center justify-center border border-hairline/70 bg-obsidian p-3">
+                  ${renderItemVisual(item, 'card')}
+                </div>
+
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="truncate text-xs font-bold tracking-wide text-acid">
+                      ${escapeHtml(item.brand)}
+                    </span>
+                    <span class="mono-num shrink-0 text-[11px] text-muted">
+                      ${escapeHtml(item.id)}
+                    </span>
+                  </div>
+                  <h3 class="line-clamp-2 text-sm font-bold leading-snug text-white">
+                    ${escapeHtml(item.name)}
+                  </h3>
+                </div>
+              </div>
+
+              <div class="mt-4 border-t border-hairline pt-3">
+                <div class="flex items-end justify-between gap-2">
+                  <div>
+                    <div class="text-[11px] text-muted">參考價格</div>
+                    <div class="mono-num text-base font-bold text-white">
+                      ${formatPrice(item.price)}
+                    </div>
+                  </div>
+                  <span class="card-action-arrow flex items-center gap-1 text-xs font-bold text-muted">
+                    <span>詳情</span>
+                    <span>→</span>
+                  </span>
+                </div>
+                ${storeBtnHtml}
+              </div>
+            </article>
+          `;
+        })
+        .join('');
+
+          grid.querySelectorAll('article[data-id]').forEach((card) => {
+        card.addEventListener('click', () => {
+          openModal(card.dataset.id);
+        });
+      });
+    }
+
+    function openModal(itemId) {
+      const item = itemsData.find((d) => d.id === itemId);
+      if (!item) return;
+
+      const modal = document.getElementById('detailModal');
+      document.getElementById('modalMemberBadge').textContent = item.member;
+      document.getElementById('modalCategoryBadge').textContent = item.category;
+      document.getElementById('modalId').textContent = item.id;
+      document.getElementById('modalVisual').innerHTML = renderItemVisual(item, 'modal');
+      document.getElementById('modalBrand').textContent = item.brand;
+      document.getElementById('modalTitle').textContent = item.name;
+      document.getElementById('modalPrice').textContent = formatPrice(item.price);
+      document.getElementById('modalSource').textContent = item.source || '未填寫出處';
+
+      const linkEl = document.getElementById('modalStoreLink');
+      const hasStore = item.productUrl && item.productUrl.trim() !== '';
+      if (hasStore) {
+        linkEl.href = item.productUrl.trim();
+        linkEl.classList.remove('pointer-events-none', 'opacity-40');
+        linkEl.innerHTML = `<span>前往賣場 / 官網</span><span>↗</span>`;
+      } else {
+        linkEl.href = '#';
+        linkEl.classList.add('pointer-events-none', 'opacity-40');
+        linkEl.innerHTML = `<span>暫無賣場連結</span>`;
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('detailModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    function resetAllFilters() {
+      state.member = '全部';
+      state.category = '全部';
+      state.search = '';
+      state.sort = 'default';
+
+      const searchInput = document.getElementById('searchInput');
+      searchInput.value = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+
+      renderAll();
+    }
+
+    function bindEvents() {
+      const searchInput = document.getElementById('searchInput');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+      searchInput.addEventListener('input', (e) => {
+        state.search = e.target.value;
+        clearSearchBtn.classList.toggle('hidden', !state.search.trim());
+        renderItemsGrid();
+      });
+
+      clearSearchBtn.addEventListener('click', () => {
+        state.search = '';
+        searchInput.value = '';
+        clearSearchBtn.classList.add('hidden');
+        renderItemsGrid();
+        searchInput.focus();
+      });
+
+      ['sortDescBtn', 'sortAscBtn'].forEach((id) => {
+        document.getElementById(id).addEventListener('click', (e) => {
+          const clickedSort = e.currentTarget.dataset.sort;
+          state.sort = state.sort === clickedSort ? 'default' : clickedSort;
+          renderAll();
+        });
+      });
+
+      document.getElementById('resetFiltersBtn').addEventListener('click', resetAllFilters);
+      document.getElementById('emptyResetBtn').addEventListener('click', resetAllFilters);
+
+      document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+      document.getElementById('detailModal').addEventListener('click', (e) => {
+        if (e.target.id === 'detailModal') {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeModal();
+        }
+      });
+    }
+
+    function renderAll() {
+      renderMemberFilters();
+      renderCategoryFilters();
+      updateSortButtons();
+      renderItemsGrid();
+    }
+
+    bindEvents();
+    renderAll();
+  </script>
+</body>
+</html>
